@@ -29,6 +29,33 @@ class _QuoteListState extends State<QuoteList> {
     });
   }
 
+  Future<void> _confirmAndDelete(Quote quote) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Delete quote?'),
+        content: const Text('This cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    ) ??
+        false;
+
+    if (ok) {
+      setState(() {
+        quotes.remove(quote);
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -39,7 +66,11 @@ class _QuoteListState extends State<QuoteList> {
         backgroundColor: Colors.redAccent,
       ),
       body: Column(
-        children: quotes.map((quote) => QuoteCard(quote: quote, onLike: () => _incrementLikes(quote),)).toList(),
+        children: quotes.map((quote) => QuoteCard(
+          quote: quote,
+          delete: () => _confirmAndDelete(quote),
+          onLike: () => _incrementLikes(quote),
+        )).toList(),
       )
     );
   }
